@@ -6,8 +6,25 @@ import { ArrowUpRight, Search, SlidersHorizontal, ShieldAlert, Receipt } from "l
 
 export const revalidate = 10;
 
-export default async function TransactionsPage() {
+export default async function TransactionsPage({
+  searchParams,
+}: {
+  searchParams: { [key: string]: string | string[] | undefined };
+}) {
+  const params = await searchParams; // searchParams in Next 15+ is a promise, or can be destructured safely if it's 14
+  const riskLevel = params?.riskLevel as string | undefined;
+  const status = params?.status as string | undefined;
+
+  const where: any = {};
+  if (riskLevel && riskLevel !== "ALL") {
+    where.riskLevel = riskLevel;
+  }
+  if (status && status !== "ALL") {
+    where.status = status;
+  }
+
   const transactions = await db.transaction.findMany({
+    where,
     take: 50,
     orderBy: { createdAt: "desc" },
     include: {

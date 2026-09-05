@@ -19,6 +19,9 @@ import {
   Zap,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
+import { GlobalSearchModal } from "./GlobalSearchModal";
+import { GlobalFilterModal } from "./GlobalFilterModal";
 
 const NAV_ITEMS = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutGrid },
@@ -77,6 +80,8 @@ export function Sidebar() {
 
 export function Topbar() {
   const pathname = usePathname();
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   return (
     <header className="py-4 px-6 flex items-center justify-between sticky top-0 z-40 bg-[#eef4f0]/90 backdrop-blur-md">
@@ -125,14 +130,14 @@ export function Topbar() {
         {/* Quick action buttons */}
         <div className="flex items-center gap-2">
           <button
-            onClick={() => alert("Global search is currently under development. Stay tuned!")}
+            onClick={() => setIsSearchOpen(true)}
             title="Search"
             className="w-9 h-9 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors"
           >
             <Search className="w-4 h-4" />
           </button>
           <button
-            onClick={() => alert("Global filters are coming soon!")}
+            onClick={() => setIsFilterOpen(true)}
             title="Filter"
             className="w-9 h-9 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors"
           >
@@ -149,6 +154,10 @@ export function Topbar() {
           RA
         </div>
       </div>
+
+      {/* Modals */}
+      <GlobalSearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
+      <GlobalFilterModal isOpen={isFilterOpen} onClose={() => setIsFilterOpen(false)} />
     </header>
   );
 }
