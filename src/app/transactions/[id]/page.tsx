@@ -255,7 +255,7 @@ export default async function TransactionDetailPage({
         )}
       </div>
 
-      {/* AI Investigation Section (Claude 3.5 Sonnet) */}
+      {/* AI Investigation Section (Groq 120b) */}
       <div className="finstack-card p-6 space-y-4 border-2 border-slate-900/10 bg-gradient-to-br from-white via-white to-amber-50/20">
         <div className="flex items-center justify-between border-b border-slate-100 pb-3">
           <div className="flex items-center gap-2">
@@ -264,7 +264,7 @@ export default async function TransactionDetailPage({
             </div>
             <div>
               <h3 className="font-extrabold text-slate-900 text-sm">
-                Claude 3.5 AI Risk Agent Investigation
+                Groq 120b AI Risk Agent Investigation
               </h3>
               <p className="text-[11px] text-slate-500">Structured natural language reasoning & recommendation</p>
             </div>
@@ -285,7 +285,7 @@ export default async function TransactionDetailPage({
         {!investigation ? (
           <div className="p-8 text-center text-slate-500 text-xs space-y-3">
             <p>AI investigation not yet generated for this transaction.</p>
-            <p className="text-slate-400">Click <strong>"Run AI Investigation"</strong> below to generate reasoning with Claude.</p>
+            <p className="text-slate-400">Click <strong>"Run AI Investigation"</strong> below to generate reasoning with Groq.</p>
           </div>
         ) : (
           <div className="space-y-4">
