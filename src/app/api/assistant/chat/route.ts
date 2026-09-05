@@ -22,6 +22,7 @@ export async function POST(req: Request) {
 
     const systemPrompt = `You are an intelligent fintech risk assistant for RiskPilot.
 Answer the user's questions based ONLY on the data provided below. Be concise and helpful.
+IMPORTANT: When generating tables in Markdown, you MUST ensure that every single row has the EXACT same number of columns as the header. Do not merge columns or leave out pipe characters for notes.
 
 Current Database Context (Last ${recentTxns.length} Transactions):
 ${recentTxns
