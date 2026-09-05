@@ -138,7 +138,7 @@ export function Topbar() {
           </button>
           <div className="hidden md:flex items-center gap-2 bg-white border border-slate-200 px-3 py-1.5 rounded-full text-xs font-medium text-slate-700">
             <Calendar className="w-3.5 h-3.5 text-slate-500" />
-            <span>Today, 22 Aug 2026</span>
+            <span>{new Date().toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</span>
           </div>
         </div>
 
