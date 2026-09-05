@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { Search, X, Loader2, Receipt, User, Building2, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { createPortal } from "react-dom";
 
 export function GlobalSearchModal({
   isOpen,
@@ -21,6 +22,11 @@ export function GlobalSearchModal({
   } | null>(null);
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Close on Escape key
   useEffect(() => {
@@ -66,14 +72,14 @@ export function GlobalSearchModal({
     return () => clearTimeout(delayDebounceFn);
   }, [query]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !mounted) return null;
 
   const totalResults = results
     ? results.transactions.length + results.customers.length + results.merchants.length
     : 0;
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center pt-20 sm:pt-24 px-4 bg-slate-900/50 backdrop-blur-sm">
+  return createPortal(
+    <div className="fixed inset-0 z-50 flex items-start justify-center pt-20 sm:pt-24 px-4 bg-transparent">
       {/* Click away overlay */}
       <div className="absolute inset-0" onClick={onClose} />
 
@@ -221,6 +227,7 @@ export function GlobalSearchModal({
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
