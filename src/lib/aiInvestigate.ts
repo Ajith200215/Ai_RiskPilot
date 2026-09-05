@@ -69,7 +69,7 @@ ${riskFactors.map((f) => `  * [${f.severity}] ${f.description} (${f.evidence})`)
 Respond ONLY with a valid JSON object, no markdown, no extra text.`;
 
       const response = await groq.chat.completions.create({
-        model: "llama-3.3-70b-versatile",
+        model: "llama3-70b-8192",
         max_tokens: 1024,
         response_format: { type: "json_object" },
         messages: [
