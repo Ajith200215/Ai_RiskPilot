@@ -13,6 +13,7 @@ import {
   Building2,
   Clock,
   User,
+  AlertTriangle,
 } from "lucide-react";
 
 export const revalidate = 10;
@@ -54,6 +55,7 @@ export default async function DashboardPage() {
   const mediumRiskCount = riskMap["MEDIUM"]?.count ?? 0;
   const highRiskCount = riskMap["HIGH"]?.count ?? 0;
   const lowRiskVolume = riskMap["LOW"]?.volume ?? 0;
+  const mediumRiskVolume = riskMap["MEDIUM"]?.volume ?? 0;
   const highRiskVolume = riskMap["HIGH"]?.volume ?? 0;
   const approvedCount = statusMap["APPROVED"] ?? 0;
   const flaggedCount = statusMap["FLAGGED"] ?? 0;
@@ -61,6 +63,7 @@ export default async function DashboardPage() {
 
   const totalVolume = volumeAggregate._sum.amount || 0;
   const highRiskPct = totalCount > 0 ? ((highRiskCount / totalCount) * 100).toFixed(1) : "0.0";
+  const mediumRiskPct = totalCount > 0 ? ((mediumRiskCount / totalCount) * 100).toFixed(1) : "0.0";
   const lowRiskPct = totalCount > 0 ? ((lowRiskCount / totalCount) * 100).toFixed(1) : "0.0";
 
   return (
@@ -78,8 +81,8 @@ export default async function DashboardPage() {
         <DashboardActions />
       </div>
 
-      {/* Top 3 Finstack Stat Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-[1.5fr_1fr_1fr] gap-5">
+      {/* Top 4 Finstack Stat Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-[1.5fr_1fr_1fr_1fr] gap-5">
         {/* Card 1: Total Volume & Stream Stats */}
         <div className="finstack-card p-6 flex flex-col justify-between space-y-6">
           <div className="flex items-center justify-between">
@@ -150,6 +153,39 @@ export default async function DashboardPage() {
             <div
               className="bg-emerald-500 h-full rounded-full transition-all duration-500"
               style={{ width: `${lowRiskPct}%` }}
+            />
+          </div>
+        </div>
+
+        {/* Card 3: Medium-Risk Warnings */}
+        <div className="finstack-card p-6 flex flex-col justify-between relative overflow-hidden bg-gradient-to-br from-white via-white to-amber-50/40">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-slate-500">
+              Medium Risk Warn
+            </span>
+            <AlertTriangle className="w-4 h-4 text-amber-500" />
+          </div>
+
+          <div className="my-4 flex items-end justify-between">
+            <div>
+              <div className="text-3xl font-extrabold text-slate-900">
+                {mediumRiskCount} <span className="text-sm font-normal text-slate-500">txns</span>
+              </div>
+              <div className="mt-2 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full badge-amber text-xs font-semibold">
+                <span>{mediumRiskPct}% of total stream</span>
+              </div>
+            </div>
+            <div className="text-right">
+              <span className="text-[10px] text-slate-400 font-semibold uppercase block mb-1">Total Warn Vol.</span>
+              <span className="text-lg font-bold text-slate-800">{formatCurrency(mediumRiskVolume)}</span>
+            </div>
+          </div>
+
+          {/* Medium Risk bar visualization */}
+          <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+            <div
+              className="bg-amber-500 h-full rounded-full transition-all duration-500"
+              style={{ width: `${mediumRiskPct}%` }}
             />
           </div>
         </div>
