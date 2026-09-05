@@ -27,21 +27,24 @@ import { GlobalSearchModal } from "./GlobalSearchModal";
 import { GlobalFilterModal } from "./GlobalFilterModal";
 
 const NAV_ITEMS: any[] = [
-  // { name: "Dashboard", href: "/dashboard", icon: LayoutGrid },
-  // { name: "Transactions", href: "/transactions", icon: Receipt },
-  // { name: "Simulation Center", href: "/simulation", icon: FlaskConical },
+  { name: "Dashboard", href: "/dashboard", icon: LayoutGrid },
+  { name: "Transactions", href: "/transactions", icon: Receipt },
+  { name: "Simulation Center", href: "/simulation", icon: FlaskConical },
   // { name: "AI Assistant", href: "/assistant", icon: Bot }, // Temporarily disabled, save for later
-  // { name: "Risk Engine Tests", href: "/risk-engine-tests", icon: TestTube2 },
-  // { name: "Merchants", href: "/merchants", icon: Building2 },
-  // { name: "Alerts", href: "/alerts", icon: Bell },
+  { name: "Risk Engine Tests", href: "/risk-engine-tests", icon: TestTube2 },
+  { name: "Merchants", href: "/merchants", icon: Building2 },
+  { name: "Alerts", href: "/alerts", icon: Bell },
 ];
 
 export function Sidebar() {
   const pathname = usePathname();
 
+  // Temporarily hidden sidebar as requested by user
+  return null;
+  /*
   return (
     <aside className="hidden md:flex w-20 bg-transparent flex-col items-center py-6 px-3 justify-start gap-8 sticky top-0 h-screen shrink-0 select-none">
-      {/* Floating vertical circular icon bar */}
+      {/* Floating vertical circular icon bar *\/}
       <nav className="flex flex-col items-center gap-3 bg-white/80 backdrop-blur-md p-2 rounded-full border border-slate-200/80 shadow-sm">
         {NAV_ITEMS.map((item) => {
           const Icon = item.icon;
@@ -62,7 +65,7 @@ export function Sidebar() {
               )}
             >
               <Icon className="w-5 h-5" />
-              {/* Tooltip */}
+              {/* Tooltip *\/}
               <span className="absolute left-16 bg-slate-900 text-white text-xs font-semibold px-2.5 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50 shadow-lg">
                 {item.name}
               </span>
@@ -72,6 +75,7 @@ export function Sidebar() {
       </nav>
     </aside>
   );
+  */
 }
 
 export function Topbar() {
