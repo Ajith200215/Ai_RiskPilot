@@ -76,9 +76,9 @@ export default async function DashboardPage() {
       </div>
 
       {/* Top 3 Finstack Stat Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-5">
-        {/* Card 1: Total Volume & Stream Stats (Span 5) */}
-        <div className="md:col-span-5 finstack-card p-6 flex flex-col justify-between space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-[1.5fr_1fr_1fr] gap-5">
+        {/* Card 1: Total Volume & Stream Stats */}
+        <div className="finstack-card p-6 flex flex-col justify-between space-y-6">
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium text-slate-500">
               Total Processed Volume
@@ -117,8 +117,8 @@ export default async function DashboardPage() {
           </div>
         </div>
 
-        {/* Card 2: Low-Risk Approvals (Span 3.5) */}
-        <div className="md:col-span-3.5 finstack-card p-6 flex flex-col justify-between relative overflow-hidden bg-gradient-to-br from-white via-white to-emerald-50/40">
+        {/* Card 2: Low-Risk Approvals */}
+        <div className="finstack-card p-6 flex flex-col justify-between relative overflow-hidden bg-gradient-to-br from-white via-white to-emerald-50/40">
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium text-slate-500">
               Low-Risk Clean Volume
@@ -145,8 +145,8 @@ export default async function DashboardPage() {
           </div>
         </div>
 
-        {/* Card 3: High-Risk Flagged Volume (Span 3.5) */}
-        <div className="md:col-span-3.5 finstack-card p-6 flex flex-col justify-between relative overflow-hidden bg-gradient-to-br from-white via-white to-rose-50/40">
+        {/* Card 3: High-Risk Flagged Volume */}
+        <div className="finstack-card p-6 flex flex-col justify-between relative overflow-hidden bg-gradient-to-br from-white via-white to-rose-50/40">
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium text-slate-500">
               High Risk Flagged
