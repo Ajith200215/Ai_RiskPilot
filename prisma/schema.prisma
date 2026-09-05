@@ -1,0 +1,145 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Customer {
+  id                      String        @id @default(uuid())
+  email                   String        @unique
+  name                    String
+  accountCreatedAt        DateTime      @default(now())
+  averageTransactionAmount Float        @default(0.0)
+  location                String
+  totalTransactions       Int           @default(0)
+  failedAttemptsCount     Int           @default(0)
+  createdAt               DateTime      @default(now())
+  updatedAt               DateTime      @updatedAt
+
+  transactions            Transaction[]
+  events                  Event[]
+}
+
+model Merchant {
+  id                    String        @id @default(uuid())
+  name                  String
+  category              String
+  domainAgeDays         Int           @default(365)
+  refundRate            Float         @default(0.01)
+  chargebackRate        Float         @default(0.005)
+  transactionVolume     Float         @default(10000.0)
+  merchantRiskScore     Int           @default(10)
+  missingBusinessInfo   Boolean       @default(false)
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+
+  transactions          Transaction[]
+  events                Event[]
+  alerts                Alert[]
+}
+
+model Transaction {
+  id                         String        @id @default(uuid())
+  customerId                 String
+  merchantId                 String
+  amount                     Float
+  status                     String        @default("PENDING") // PENDING | APPROVED | ALLOW_WITH_MONITORING | REQUEST_VERIFICATION | MANUAL_REVIEW | HOLD | BLOCK
+  riskScore                  Int           @default(0)
+  riskLevel                  String        @default("LOW") // LOW | MEDIUM | HIGH
+  deviceFingerprint          String
+  isNewDevice                Boolean       @default(false)
+  location                   String
+  isLocationAnomaly          Boolean       @default(false)
+  ipAddress                  String
+  failedAttemptsBeforeSuccess Int          @default(0)
+  createdAt                  DateTime      @default(now())
+  updatedAt                  DateTime      @updatedAt
+
+  customer                   Customer      @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  merchant                   Merchant      @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  riskFactors                RiskFactor[]
+  investigation              Investigation?
+  decision                   Decision?
+  events                     Event[]
+  alerts                     Alert[]
+
+  @@index([customerId])
+  @@index([merchantId])
+  @@index([riskLevel])
+  @@index([status])
+}
+
+model RiskFactor {
+  id            String      @id @default(uuid())
+  transactionId String
+  factorKey     String
+  severity      String      // LOW | MEDIUM | HIGH
+  points        Int
+  description   String
+  evidence      String
+  createdAt     DateTime    @default(now())
+
+  transaction   Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+
+  @@index([transactionId])
+}
+
+model Investigation {
+  id                   String      @id @default(uuid())
+  transactionId        String      @unique
+  investigationSummary String
+  recommendation       String      // APPROVE | ALLOW_WITH_MONITORING | REQUEST_VERIFICATION | MANUAL_REVIEW | HOLD | BLOCK
+  confidence           Float
+  reasoning            String
+  createdAt            DateTime    @default(now())
+
+  transaction          Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+}
+
+model Decision {
+  id                  String      @id @default(uuid())
+  transactionId       String      @unique
+  decision            String      // APPROVE | REVIEW | HOLD | BLOCK
+  overriddenByAnalyst Boolean     @default(false)
+  analystNotes        String?
+  createdAt           DateTime    @default(now())
+
+  transaction         Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+}
+
+model Event {
+  id            String       @id @default(uuid())
+  transactionId String?
+  customerId    String?
+  merchantId    String?
+  type          String
+  label         String
+  createdAt     DateTime     @default(now())
+
+  transaction   Transaction? @relation(fields: [transactionId], references: [id], onDelete: SetNull)
+  customer      Customer?    @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  merchant      Merchant?    @relation(fields: [merchantId], references: [id], onDelete: SetNull)
+
+  @@index([transactionId])
+  @@index([customerId])
+  @@index([merchantId])
+}
+
+model Alert {
+  id                   String       @id @default(uuid())
+  type                 String
+  severity             String       // LOW | MEDIUM | HIGH
+  message              String
+  relatedTransactionId String?
+  relatedMerchantId    String?
+  isRead               Boolean      @default(false)
+  createdAt            DateTime     @default(now())
+
+  transaction          Transaction? @relation(fields: [relatedTransactionId], references: [id], onDelete: SetNull)
+  merchant             Merchant?    @relation(fields: [relatedMerchantId], references: [id], onDelete: SetNull)
+
+  @@index([isRead])
+}

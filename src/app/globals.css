@@ -1,0 +1,91 @@
+@import "tailwindcss";
+
+:root {
+  --background: #eff5f1;
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --primary: #0f172a;
+  --primary-foreground: #ffffff;
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+  --border: #e2e8f0;
+}
+
+body {
+  background-color: #eef4f0;
+  color: #0f172a;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  min-height: 100vh;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #eef4f0;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Finstack inspired UI Utilities */
+.finstack-card {
+  background: #ffffff;
+  border-radius: 1.5rem; /* 24px */
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.03);
+}
+
+.finstack-card-sm {
+  background: #ffffff;
+  border-radius: 1.25rem;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  box-shadow: 0 2px 10px -1px rgba(15, 23, 42, 0.02);
+}
+
+.finstack-pill-active {
+  background: #000000;
+  color: #ffffff;
+  border-radius: 9999px;
+}
+
+.finstack-pill {
+  background: #ffffff;
+  color: #475569;
+  border-radius: 9999px;
+  border: 1px solid #e2e8f0;
+  transition: all 0.15s ease;
+}
+
+.finstack-pill:hover {
+  background: #f8fafc;
+  color: #0f172a;
+}
+
+.badge-green {
+  background: #dcfce7;
+  color: #15803d;
+  border-radius: 9999px;
+}
+
+.badge-red {
+  background: #fee2e2;
+  color: #b91c1c;
+  border-radius: 9999px;
+}
+
+.badge-amber {
+  background: #fef3c7;
+  color: #b45309;
+  border-radius: 9999px;
+}
