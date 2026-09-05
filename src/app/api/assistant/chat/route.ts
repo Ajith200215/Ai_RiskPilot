@@ -51,7 +51,7 @@ ${recentTxns
     let stream;
     try {
       stream = await groq.chat.completions.create({
-        model: "meta-llama/llama-4-scout-17b-16e-instruct",
+        model: "openai/gpt-oss-120b",
         max_tokens: 1024,
         stream: true,
         messages: [
