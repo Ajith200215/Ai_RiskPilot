@@ -2,6 +2,8 @@
 
 import { useState, useRef, useEffect } from "react";
 import { Bot, User, Send, Sparkles, Loader2 } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 type Message = {
   role: "user" | "assistant";
@@ -134,8 +136,10 @@ export default function AssistantPage() {
                     <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
                   </div>
                 ) : (
-                  <div className="whitespace-pre-wrap leading-relaxed">
-                    {msg.content}
+                  <div className="prose prose-sm prose-slate max-w-none prose-p:leading-relaxed prose-pre:bg-slate-800 prose-pre:text-slate-50 prose-td:align-middle prose-th:align-middle prose-table:border-collapse prose-td:border prose-td:border-slate-200 prose-th:border prose-th:border-slate-200 prose-th:bg-slate-50 prose-td:p-2 prose-th:p-2">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                      {msg.content}
+                    </ReactMarkdown>
                   </div>
                 )}
               </div>

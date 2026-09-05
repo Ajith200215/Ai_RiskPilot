@@ -14,6 +14,7 @@
     "@anthropic-ai/sdk": "^0.124.0",
     "@faker-js/faker": "^10.6.0",
     "@prisma/client": "^5.22.0",
+    "@tailwindcss/typography": "^0.5.20",
     "@tremor/react": "^3.18.7",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -23,6 +24,8 @@
     "prisma": "^5.22.0",
     "react": "19.2.8",
     "react-dom": "19.2.8",
+    "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1",
     "tailwind-merge": "^3.6.0",
     "vitest": "^4.1.11",
     "zustand": "^5.0.15"
