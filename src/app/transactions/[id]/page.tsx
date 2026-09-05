@@ -17,6 +17,7 @@ import {
   XCircle,
   Clock,
   Zap,
+  ArrowUpRight,
 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -100,7 +101,7 @@ export default async function TransactionDetailPage({
           </div>
 
           <div className="flex items-center gap-4 text-xs text-slate-500">
-            <span>Customer: <strong className="text-slate-800">{customer.name}</strong></span>
+            <span>Customer: <Link href={`/customers/${customer.id}`} className="font-bold text-slate-800 hover:text-blue-600 transition-colors">{customer.name}</Link></span>
             <span>·</span>
             <span>Merchant: <strong className="text-slate-800">{merchant.name}</strong></span>
             <span>·</span>
@@ -140,10 +141,10 @@ export default async function TransactionDetailPage({
           </div>
 
           <div className="grid grid-cols-2 gap-3 text-xs">
-            <div className="p-3 rounded-xl bg-slate-50 border border-slate-100">
+            <Link href={`/customers/${customer.id}`} className="p-3 rounded-xl bg-slate-50 border border-slate-100 hover:border-blue-300 hover:bg-blue-50/50 transition-colors group">
               <span className="text-slate-400 block text-[10px]">Customer Name</span>
-              <span className="font-bold text-slate-900">{customer.name}</span>
-            </div>
+              <span className="font-bold text-slate-900 group-hover:text-blue-600 transition-colors flex items-center justify-between">{customer.name} <ArrowUpRight className="w-3 h-3 text-blue-500 opacity-0 group-hover:opacity-100" /></span>
+            </Link>
             <div className="p-3 rounded-xl bg-slate-50 border border-slate-100">
               <span className="text-slate-400 block text-[10px]">Email Address</span>
               <span className="font-bold text-slate-900 truncate block">{customer.email}</span>

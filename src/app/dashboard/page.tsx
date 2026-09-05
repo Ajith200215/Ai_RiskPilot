@@ -221,15 +221,15 @@ export default async function DashboardPage() {
 
                     {/* Customer */}
                     <td className="py-3 px-3">
-                      <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-full bg-slate-100 text-slate-700 flex items-center justify-center font-bold text-[10px]">
+                      <Link href={`/customers/${tx.customer.id}`} className="flex items-center gap-2 group/cust">
+                        <div className="w-6 h-6 rounded-full bg-slate-100 text-slate-700 flex items-center justify-center font-bold text-[10px] group-hover/cust:bg-blue-100 group-hover/cust:text-blue-700 transition-colors">
                           {tx.customer.name.substring(0, 2).toUpperCase()}
                         </div>
                         <div>
-                          <span className="font-semibold text-slate-900 block">{tx.customer.name}</span>
+                          <span className="font-semibold text-slate-900 block group-hover/cust:text-blue-600 transition-colors">{tx.customer.name}</span>
                           <span className="text-[10px] text-slate-400">{tx.customer.location}</span>
                         </div>
-                      </div>
+                      </Link>
                     </td>
 
                     {/* Merchant */}

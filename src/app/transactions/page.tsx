@@ -78,10 +78,10 @@ export default async function TransactionsPage() {
 
                     {/* Customer */}
                     <td className="py-3 px-3">
-                      <div>
-                        <span className="font-semibold text-slate-900 block">{tx.customer.name}</span>
+                      <Link href={`/customers/${tx.customer.id}`} className="block group/cust">
+                        <span className="font-semibold text-slate-900 block group-hover/cust:text-blue-600 transition-colors">{tx.customer.name}</span>
                         <span className="text-[10px] text-slate-400">{tx.customer.email}</span>
-                      </div>
+                      </Link>
                     </td>
 
                     {/* Merchant */}
