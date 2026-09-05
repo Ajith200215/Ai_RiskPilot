@@ -41,13 +41,6 @@ export function Sidebar() {
 
   return (
     <aside className="hidden md:flex w-20 bg-transparent flex-col items-center py-6 px-3 justify-start gap-8 sticky top-0 h-screen shrink-0 select-none">
-      {/* Brand Icon */}
-      <Link href="/dashboard" className="group">
-        <div className="w-12 h-12 rounded-full bg-emerald-400 text-black flex items-center justify-center font-bold text-xl shadow-md group-hover:scale-105 transition-transform">
-          R
-        </div>
-      </Link>
-
       {/* Floating vertical circular icon bar */}
       <nav className="flex flex-col items-center gap-3 bg-white/80 backdrop-blur-md p-2 rounded-full border border-slate-200/80 shadow-sm">
         {NAV_ITEMS.map((item) => {
@@ -185,12 +178,7 @@ export function Topbar() {
           <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={() => setIsMobileMenuOpen(false)} />
           <div className="relative w-[85%] max-w-sm bg-[#eef4f0] h-[100dvh] shadow-2xl flex flex-col animate-in slide-in-from-left duration-200">
             <div className="p-6 flex items-center justify-between shrink-0">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-emerald-400 text-black flex items-center justify-center font-bold text-lg shadow-sm shrink-0">
-                  R
-                </div>
-                <h2 className="font-extrabold text-xl text-slate-900 tracking-tight">RiskPilot</h2>
-              </div>
+              <h2 className="font-extrabold text-xl text-slate-900 tracking-tight">RiskPilot</h2>
               <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 text-slate-400 hover:text-slate-900 bg-white border border-slate-200 rounded-full transition-colors shrink-0">
                 <X className="w-4 h-4" />
               </button>
