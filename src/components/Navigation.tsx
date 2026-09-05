@@ -17,6 +17,7 @@ import {
   AlertTriangle,
   User,
   Zap,
+  Menu,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState, Suspense } from "react";
@@ -82,20 +83,30 @@ export function Topbar() {
   const pathname = usePathname();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
-    <header className="py-4 px-6 flex items-center justify-between sticky top-0 z-40 bg-[#eef4f0]/90 backdrop-blur-md">
-      {/* Left: Brand name + Horizontal Pill Navigation */}
-      <div className="flex items-center gap-6">
+    <header className="py-4 px-4 sm:px-6 flex items-center justify-between sticky top-0 z-40 bg-[#eef4f0]/90 backdrop-blur-md">
+      {/* Left: Mobile Hamburger + Brand name + Horizontal Pill Navigation */}
+      <div className="flex items-center gap-4 sm:gap-6">
+        
+        {/* Mobile Hamburger Button */}
+        <button 
+          onClick={() => setIsMobileMenuOpen(true)}
+          className="md:hidden w-10 h-10 flex items-center justify-center bg-white rounded-full border border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors"
+        >
+          <Menu className="w-5 h-5" />
+        </button>
+
         <div className="flex items-center gap-2">
-          <h1 className="font-extrabold text-2xl tracking-tight text-slate-900">
+          <h1 className="font-extrabold text-xl sm:text-2xl tracking-tight text-slate-900">
             RiskPilot
           </h1>
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
         </div>
 
-        {/* Top Navigation Pills (Mobile & Desktop) */}
-        <nav className="flex md:hidden lg:flex items-center gap-1.5 bg-white/80 p-1 rounded-full border border-slate-200/80 shadow-xs overflow-x-auto max-w-[200px] sm:max-w-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+        {/* Top Navigation Pills (Desktop Only) */}
+        <nav className="hidden lg:flex items-center gap-1.5 bg-white/80 p-1 rounded-full border border-slate-200/80 shadow-xs">
           {NAV_ITEMS.map((item) => {
             const isActive =
               pathname === item.href ||
@@ -120,15 +131,15 @@ export function Topbar() {
       </div>
 
       {/* Right Controls: Synthetic Banner + Quick Tools + Profile */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2 sm:gap-3">
         {/* Synthetic Banner Badge */}
-        <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-800 text-xs font-semibold">
+        <div className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-800 text-xs font-semibold">
           <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
           <span>DEMO ENVIRONMENT — SYNTHETIC DATA ONLY</span>
         </div>
 
         {/* Quick action buttons */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2">
           <button
             onClick={() => setIsSearchOpen(true)}
             title="Search"
@@ -150,7 +161,7 @@ export function Topbar() {
         </div>
 
         {/* Profile Avatar */}
-        <div className="w-9 h-9 rounded-full bg-slate-900 text-white flex items-center justify-center text-xs font-bold shadow-xs">
+        <div className="w-9 h-9 rounded-full bg-slate-900 text-white flex items-center justify-center text-xs font-bold shadow-xs ml-1 sm:ml-0 shrink-0">
           RA
         </div>
       </div>
@@ -160,6 +171,52 @@ export function Topbar() {
       <Suspense fallback={null}>
         <GlobalFilterModal isOpen={isFilterOpen} onClose={() => setIsFilterOpen(false)} />
       </Suspense>
+
+      {/* Mobile Sidebar Overlay */}
+      {isMobileMenuOpen && (
+        <div className="fixed inset-0 z-[100] md:hidden flex">
+          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={() => setIsMobileMenuOpen(false)} />
+          <div className="relative w-4/5 max-w-sm bg-[#eef4f0] h-full shadow-2xl flex flex-col animate-in slide-in-from-left duration-200">
+            <div className="p-6 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-emerald-400 text-black flex items-center justify-center font-bold text-lg shadow-sm">
+                  R
+                </div>
+                <h2 className="font-extrabold text-xl text-slate-900 tracking-tight">RiskPilot</h2>
+              </div>
+              <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 text-slate-400 hover:text-slate-900 bg-white border border-slate-200 rounded-full transition-colors">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <nav className="flex-1 overflow-y-auto px-4 py-2 space-y-2">
+              {NAV_ITEMS.map((item) => {
+                const Icon = item.icon;
+                const isActive = pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href));
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={cn(
+                      "flex items-center gap-4 px-5 py-3.5 rounded-2xl font-bold transition-all",
+                      isActive ? "bg-black text-white shadow-md" : "bg-white text-slate-600 border border-slate-200 hover:border-slate-300 hover:text-slate-900"
+                    )}
+                  >
+                    <Icon className={cn("w-5 h-5", isActive ? "text-emerald-400" : "text-slate-400")} />
+                    {item.name}
+                  </Link>
+                );
+              })}
+            </nav>
+            <div className="p-6">
+              <div className="flex items-center gap-2 p-4 bg-amber-500/10 border border-amber-500/20 rounded-2xl">
+                <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0" />
+                <span className="text-xs font-bold text-amber-800 leading-tight">DEMO ENVIRONMENT</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </header>
   );
 }
