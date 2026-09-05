@@ -26,7 +26,7 @@ import { createPortal } from "react-dom";
 import { GlobalSearchModal } from "./GlobalSearchModal";
 import { GlobalFilterModal } from "./GlobalFilterModal";
 
-const NAV_ITEMS = [
+const NAV_ITEMS: any[] = [
   // { name: "Dashboard", href: "/dashboard", icon: LayoutGrid },
   // { name: "Transactions", href: "/transactions", icon: Receipt },
   // { name: "Simulation Center", href: "/simulation", icon: FlaskConical },
