@@ -24,6 +24,7 @@ export default async function DashboardPage() {
       db.transaction.groupBy({
         by: ["riskLevel"],
         _count: { _all: true },
+        _sum: { amount: true },
       }),
       db.transaction.groupBy({
         by: ["status"],
@@ -42,16 +43,18 @@ export default async function DashboardPage() {
     ]);
 
   const riskMap = Object.fromEntries(
-    riskGroups.map((g) => [g.riskLevel, g._count._all])
+    riskGroups.map((g) => [g.riskLevel, { count: g._count._all, volume: g._sum.amount ?? 0 }])
   );
   const statusMap = Object.fromEntries(
     statusGroups.map((g) => [g.status, g._count._all])
   );
 
   const totalCount = riskGroups.reduce((s, g) => s + g._count._all, 0);
-  const lowRiskCount = riskMap["LOW"] ?? 0;
-  const mediumRiskCount = riskMap["MEDIUM"] ?? 0;
-  const highRiskCount = riskMap["HIGH"] ?? 0;
+  const lowRiskCount = riskMap["LOW"]?.count ?? 0;
+  const mediumRiskCount = riskMap["MEDIUM"]?.count ?? 0;
+  const highRiskCount = riskMap["HIGH"]?.count ?? 0;
+  const lowRiskVolume = riskMap["LOW"]?.volume ?? 0;
+  const highRiskVolume = riskMap["HIGH"]?.volume ?? 0;
   const approvedCount = statusMap["APPROVED"] ?? 0;
   const flaggedCount = statusMap["FLAGGED"] ?? 0;
   const blockedCount = statusMap["BLOCK"] ?? 0;
@@ -126,13 +129,19 @@ export default async function DashboardPage() {
             <CheckCircle2 className="w-4 h-4 text-emerald-500" />
           </div>
 
-          <div className="my-4">
-            <div className="text-3xl font-extrabold text-slate-900">
-              {lowRiskCount} <span className="text-sm font-normal text-slate-500">txns</span>
+          <div className="my-4 flex items-end justify-between">
+            <div>
+              <div className="text-3xl font-extrabold text-slate-900">
+                {lowRiskCount} <span className="text-sm font-normal text-slate-500">txns</span>
+              </div>
+              <div className="mt-2 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full badge-green text-xs font-semibold">
+                <TrendingUp className="w-3 h-3" />
+                <span>{lowRiskPct}% of total stream</span>
+              </div>
             </div>
-            <div className="mt-2 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full badge-green text-xs font-semibold">
-              <TrendingUp className="w-3 h-3" />
-              <span>{lowRiskPct}% of total stream</span>
+            <div className="text-right">
+              <span className="text-[10px] text-slate-400 font-semibold uppercase block mb-1">Total Clean Vol.</span>
+              <span className="text-lg font-bold text-slate-800">{formatCurrency(lowRiskVolume)}</span>
             </div>
           </div>
 
@@ -154,12 +163,18 @@ export default async function DashboardPage() {
             <AlertOctagon className="w-4 h-4 text-rose-500" />
           </div>
 
-          <div className="my-4">
-            <div className="text-3xl font-extrabold text-rose-600">
-              {highRiskCount} <span className="text-sm font-normal text-slate-500">txns</span>
+          <div className="my-4 flex items-end justify-between">
+            <div>
+              <div className="text-3xl font-extrabold text-rose-600">
+                {highRiskCount} <span className="text-sm font-normal text-slate-500">txns</span>
+              </div>
+              <div className="mt-2 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full badge-red text-xs font-semibold">
+                <span>{highRiskPct}% threat ratio</span>
+              </div>
             </div>
-            <div className="mt-2 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full badge-red text-xs font-semibold">
-              <span>{highRiskPct}% threat ratio</span>
+            <div className="text-right">
+              <span className="text-[10px] text-slate-400 font-semibold uppercase block mb-1">Total Risk Vol.</span>
+              <span className="text-lg font-bold text-rose-700">{formatCurrency(highRiskVolume)}</span>
             </div>
           </div>
 
