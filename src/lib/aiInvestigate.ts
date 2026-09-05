@@ -1,4 +1,4 @@
-import Anthropic from "@anthropic-ai/sdk";
+import Groq from "groq-sdk";
 import { db } from "@/lib/db";
 
 export type AIRecommendationType =
@@ -16,12 +16,12 @@ export interface AIInvestigationPayload {
   reasoning: string;
 }
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY || "placeholder_key",
+const groq = new Groq({
+  apiKey: process.env.GROQ_API_KEY || "",
 });
 
 /**
- * Investigates a transaction using Anthropic Claude API (tool use / structured output).
+ * Investigates a transaction using Groq (llama-3.3-70b).
  * Falls back gracefully to deterministic risk analyst reasoning if API key is not configured.
  */
 export async function investigateTransaction(transactionId: string) {
@@ -42,12 +42,18 @@ export async function investigateTransaction(transactionId: string) {
 
   let investigationData: AIInvestigationPayload;
 
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  const isRealApiKeyPresent = apiKey && apiKey.startsWith("sk-ant-") && apiKey.length > 20;
+  const apiKey = process.env.GROQ_API_KEY;
+  const isRealApiKeyPresent = apiKey && apiKey.startsWith("gsk_") && apiKey.length > 20;
 
   if (isRealApiKeyPresent) {
     try {
-      const promptText = `Analyze this payment transaction for risk & potential fraud:
+      const promptText = `Analyze this payment transaction for risk & potential fraud and return a JSON object with exactly these fields:
+- investigationSummary: string (2-4 sentence natural language explanation)
+- recommendation: one of APPROVE | ALLOW_WITH_MONITORING | REQUEST_VERIFICATION | MANUAL_REVIEW | HOLD | BLOCK
+- confidence: number from 0 to 100
+- reasoning: string (step-by-step plain-language evidence justification)
+
+Transaction data:
 - Transaction ID: ${transaction.id}
 - Amount: ₹${amount.toLocaleString("en-IN")}
 - Risk Score: ${riskScore}/100 (${riskLevel})
@@ -58,70 +64,39 @@ export async function investigateTransaction(transactionId: string) {
 - Location: ${transaction.location} (Is Location Anomaly: ${transaction.isLocationAnomaly})
 - Merchant: ${merchant.name} (Category: ${merchant.category}, Risk Score: ${merchant.merchantRiskScore})
 - Triggered Risk Factors (${riskFactors.length}):
-${riskFactors.map((f) => `  * [${f.severity}] ${f.description} (${f.evidence})`).join("\n")}`;
+${riskFactors.map((f) => `  * [${f.severity}] ${f.description} (${f.evidence})`).join("\n")}
 
-      const response = await anthropic.messages.create({
-        model: "claude-3-5-sonnet-20241022",
+Respond ONLY with a valid JSON object, no markdown, no extra text.`;
+
+      const response = await groq.chat.completions.create({
+        model: "llama-3.3-70b-versatile",
         max_tokens: 1024,
-        system:
-          "You are a senior fintech risk analyst AI at Razorpay. You are given a transaction's risk score and risk factors. Do not invent facts not present in the data. Distinguish between clearly normal, potentially suspicious, high risk, and likely fraudulent. Explain your reasoning in plain language a human analyst would trust.",
-        messages: [{ role: "user", content: promptText }],
-        tools: [
+        response_format: { type: "json_object" },
+        messages: [
           {
-            name: "record_investigation_result",
-            description: "Record the structured AI risk investigation output for a payment transaction.",
-            input_schema: {
-              type: "object",
-              properties: {
-                investigationSummary: {
-                  type: "string",
-                  description: "2 to 4 sentence natural language explanation summarizing the findings.",
-                },
-                recommendation: {
-                  type: "string",
-                  enum: [
-                    "APPROVE",
-                    "ALLOW_WITH_MONITORING",
-                    "REQUEST_VERIFICATION",
-                    "MANUAL_REVIEW",
-                    "HOLD",
-                    "BLOCK",
-                  ],
-                },
-                confidence: {
-                  type: "number",
-                  description: "Confidence score from 0 to 100",
-                },
-                reasoning: {
-                  type: "string",
-                  description: "Step by step plain-language evidence justification for human risk analyst.",
-                },
-              },
-              required: ["investigationSummary", "recommendation", "confidence", "reasoning"],
-            },
+            role: "system",
+            content:
+              "You are a senior fintech risk analyst AI. You analyze transaction data and return structured JSON risk investigation reports. Do not invent facts not present in the data. Distinguish between clearly normal, potentially suspicious, high risk, and likely fraudulent.",
           },
+          { role: "user", content: promptText },
         ],
-        tool_choice: { type: "tool", name: "record_investigation_result" },
       });
 
-      const toolUseBlock = response.content.find((block) => block.type === "tool_use");
-      if (toolUseBlock && toolUseBlock.type === "tool_use") {
-        const input = toolUseBlock.input as AIInvestigationPayload;
-        investigationData = {
-          investigationSummary: input.investigationSummary,
-          recommendation: input.recommendation,
-          confidence: Number(input.confidence),
-          reasoning: input.reasoning,
-        };
-      } else {
-        throw new Error("Anthropic tool use output missing in response");
-      }
+      const raw = response.choices[0]?.message?.content || "";
+      const parsed = JSON.parse(raw) as AIInvestigationPayload;
+
+      investigationData = {
+        investigationSummary: parsed.investigationSummary,
+        recommendation: parsed.recommendation,
+        confidence: Number(parsed.confidence),
+        reasoning: parsed.reasoning,
+      };
     } catch (apiErr: any) {
-      console.warn("Anthropic API call fallback activated:", apiErr.message);
+      console.warn("Groq API call fallback activated:", apiErr.message);
       investigationData = generateHeuristicInvestigation(transaction);
     }
   } else {
-    // Fallback heuristic generator when API key is placeholder
+    // Fallback heuristic generator when API key is missing
     investigationData = generateHeuristicInvestigation(transaction);
   }
 
@@ -150,7 +125,7 @@ ${riskFactors.map((f) => `  * [${f.severity}] ${f.description} (${f.evidence})`)
       customerId: customer.id,
       merchantId: merchant.id,
       type: "INVESTIGATION_COMPLETED",
-      label: `Claude AI completed investigation: ${investigationData.recommendation} (${investigationData.confidence}% confidence)`,
+      label: `Groq AI completed investigation: ${investigationData.recommendation} (${investigationData.confidence}% confidence)`,
     },
   });
 

@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import Anthropic from "@anthropic-ai/sdk";
+import Groq from "groq-sdk";
 import { db } from "@/lib/db";
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY || "placeholder_key",
+const groq = new Groq({
+  apiKey: process.env.GROQ_API_KEY || "",
 });
 
 export async function POST(req: Request) {
@@ -14,7 +14,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid messages format" }, { status: 400 });
     }
 
-    // MVP Context Gathering: Fetch the last 50 transactions to give Claude an idea of current state
+    // MVP Context Gathering: Fetch the last 50 transactions to give the model context
     const recentTxns = await db.transaction.findMany({
       take: 50,
       orderBy: { createdAt: "desc" },
@@ -24,38 +24,30 @@ export async function POST(req: Request) {
       },
     });
 
-    const contextString = `
+    const systemPrompt = `You are an intelligent fintech risk assistant for RiskPilot.
+Answer the user's questions based ONLY on the data provided below. If the user asks about something not in the context, politely inform them that you do not have data on that. Be concise, helpful, and format any IDs or monetary values clearly.
+
 Current Database Context (Last 50 Transactions):
 ${recentTxns
   .map(
     (tx) =>
       `[${tx.id}] ${tx.createdAt.toISOString()} - ₹${tx.amount} at ${tx.merchant.name} (${tx.merchant.category}) by ${tx.customer.name}. Status: ${tx.status}, RiskLevel: ${tx.riskLevel} (Score: ${tx.riskScore})`
   )
-  .join("\n")}
-
-Instructions:
-You are an intelligent fintech risk assistant. Answer the user's questions based ONLY on the data provided above. If the user asks about something not in the context, politely inform them that you do not have data on that. Be concise, helpful, and format any IDs or monetary values clearly.
-`;
-
-    const systemPrompt = contextString;
-
-    // Filter out system messages from client if any, and map to Anthropic format
-    const anthropicMessages = messages.map((m: any) => ({
-      role: (m.role === "assistant" ? "assistant" : "user") as "assistant" | "user",
-      content: m.content,
-    }));
+  .join("\n")}`;
 
     const isRealApiKeyPresent =
-      process.env.ANTHROPIC_API_KEY &&
-      process.env.ANTHROPIC_API_KEY.startsWith("sk-ant-") &&
-      process.env.ANTHROPIC_API_KEY.length > 20;
+      process.env.GROQ_API_KEY &&
+      process.env.GROQ_API_KEY.startsWith("gsk_") &&
+      process.env.GROQ_API_KEY.length > 20;
 
     if (!isRealApiKeyPresent) {
-      // Fallback if no real API key
       const encoder = new TextEncoder();
       const readable = new ReadableStream({
         async start(controller) {
-          const fallbackText = "Hello! I am operating in fallback mode as no valid Anthropic API key is configured. I see you have " + recentTxns.length + " recent transactions in the database. Please provide an API key for full AI capabilities.";
+          const fallbackText =
+            "Hello! I am operating in fallback mode as no valid Groq API key is configured. I see you have " +
+            recentTxns.length +
+            " recent transactions in the database. Please provide a GROQ_API_KEY for full AI capabilities.";
           controller.enqueue(encoder.encode(fallbackText));
           controller.close();
         },
@@ -65,22 +57,31 @@ You are an intelligent fintech risk assistant. Answer the user's questions based
       });
     }
 
-    // Stream from Anthropic
-    const stream = await anthropic.messages.stream({
-      model: "claude-3-5-sonnet-20241022",
+    // Map messages to Groq format
+    const groqMessages = messages.map((m: any) => ({
+      role: (m.role === "assistant" ? "assistant" : "user") as "assistant" | "user",
+      content: m.content,
+    }));
+
+    // Stream from Groq
+    const stream = await groq.chat.completions.create({
+      model: "llama-3.3-70b-versatile",
       max_tokens: 1024,
-      system: systemPrompt,
-      messages: anthropicMessages,
+      stream: true,
+      messages: [
+        { role: "system", content: systemPrompt },
+        ...groqMessages,
+      ],
     });
 
-    // Convert Anthropic stream to generic ReadableStream yielding text chunks
     const readable = new ReadableStream({
       async start(controller) {
         const encoder = new TextEncoder();
         try {
           for await (const chunk of stream) {
-            if (chunk.type === "content_block_delta" && chunk.delta.type === "text_delta") {
-              controller.enqueue(encoder.encode(chunk.delta.text));
+            const text = chunk.choices[0]?.delta?.content;
+            if (text) {
+              controller.enqueue(encoder.encode(text));
             }
           }
         } catch (error) {
@@ -96,7 +97,7 @@ You are an intelligent fintech risk assistant. Answer the user's questions based
       headers: {
         "Content-Type": "text/plain; charset=utf-8",
         "Cache-Control": "no-cache",
-        "Connection": "keep-alive",
+        Connection: "keep-alive",
       },
     });
   } catch (error: any) {
