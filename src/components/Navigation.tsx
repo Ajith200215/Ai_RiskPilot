@@ -18,6 +18,7 @@ import {
   User,
   Zap,
   Menu,
+  X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState, Suspense } from "react";
