@@ -19,7 +19,7 @@ import {
   Zap,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { GlobalSearchModal } from "./GlobalSearchModal";
 import { GlobalFilterModal } from "./GlobalFilterModal";
 
@@ -157,7 +157,9 @@ export function Topbar() {
 
       {/* Modals */}
       <GlobalSearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
-      <GlobalFilterModal isOpen={isFilterOpen} onClose={() => setIsFilterOpen(false)} />
+      <Suspense fallback={null}>
+        <GlobalFilterModal isOpen={isFilterOpen} onClose={() => setIsFilterOpen(false)} />
+      </Suspense>
     </header>
   );
 }
