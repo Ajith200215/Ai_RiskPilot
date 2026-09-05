@@ -20,7 +20,7 @@ import {
   ArrowUpRight,
 } from "lucide-react";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 5;
 
 export default async function TransactionDetailPage({
   params,

@@ -15,39 +15,46 @@ import {
   User,
 } from "lucide-react";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 10;
 
 export default async function DashboardPage() {
-  // Fetch live stats from Prisma DB
-  const [
-    totalCount,
-    lowRiskCount,
-    mediumRiskCount,
-    highRiskCount,
-    approvedCount,
-    flaggedCount,
-    blockedCount,
-    volumeAggregate,
-    recentTransactions,
-  ] = await Promise.all([
-    db.transaction.count(),
-    db.transaction.count({ where: { riskLevel: "LOW" } }),
-    db.transaction.count({ where: { riskLevel: "MEDIUM" } }),
-    db.transaction.count({ where: { riskLevel: "HIGH" } }),
-    db.transaction.count({ where: { status: "APPROVED" } }),
-    db.transaction.count({ where: { status: "FLAGGED" } }),
-    db.transaction.count({ where: { status: "BLOCK" } }),
-    db.transaction.aggregate({ _sum: { amount: true } }),
-    db.transaction.findMany({
-      take: 10,
-      orderBy: { createdAt: "desc" },
-      include: {
-        customer: true,
-        merchant: true,
-        riskFactors: true,
-      },
-    }),
-  ]);
+  // Fetch live stats — grouped to minimize DB round-trips
+  const [riskGroups, statusGroups, volumeAggregate, recentTransactions] =
+    await Promise.all([
+      db.transaction.groupBy({
+        by: ["riskLevel"],
+        _count: { _all: true },
+      }),
+      db.transaction.groupBy({
+        by: ["status"],
+        _count: { _all: true },
+      }),
+      db.transaction.aggregate({ _sum: { amount: true } }),
+      db.transaction.findMany({
+        take: 10,
+        orderBy: { createdAt: "desc" },
+        include: {
+          customer: true,
+          merchant: true,
+          _count: { select: { riskFactors: true } },
+        },
+      }),
+    ]);
+
+  const riskMap = Object.fromEntries(
+    riskGroups.map((g) => [g.riskLevel, g._count._all])
+  );
+  const statusMap = Object.fromEntries(
+    statusGroups.map((g) => [g.status, g._count._all])
+  );
+
+  const totalCount = riskGroups.reduce((s, g) => s + g._count._all, 0);
+  const lowRiskCount = riskMap["LOW"] ?? 0;
+  const mediumRiskCount = riskMap["MEDIUM"] ?? 0;
+  const highRiskCount = riskMap["HIGH"] ?? 0;
+  const approvedCount = statusMap["APPROVED"] ?? 0;
+  const flaggedCount = statusMap["FLAGGED"] ?? 0;
+  const blockedCount = statusMap["BLOCK"] ?? 0;
 
   const totalVolume = volumeAggregate._sum.amount || 0;
   const highRiskPct = totalCount > 0 ? ((highRiskCount / totalCount) * 100).toFixed(1) : "0.0";

@@ -173,17 +173,17 @@ export async function generateBulkTransactions(count: number = 100) {
   const suspiciousCount = Math.floor(count * 0.25);
   const highRiskCount = count - normalCount - suspiciousCount;
 
-  const results = [];
-
-  for (let i = 0; i < normalCount; i++) {
-    results.push(await generateSyntheticTransaction({ profile: "normal" }));
-  }
-  for (let i = 0; i < suspiciousCount; i++) {
-    results.push(await generateSyntheticTransaction({ profile: "suspicious" }));
-  }
-  for (let i = 0; i < highRiskCount; i++) {
-    results.push(await generateSyntheticTransaction({ profile: "high-risk" }));
-  }
+  const results = await Promise.all([
+    ...Array.from({ length: normalCount }, () =>
+      generateSyntheticTransaction({ profile: "normal" })
+    ),
+    ...Array.from({ length: suspiciousCount }, () =>
+      generateSyntheticTransaction({ profile: "suspicious" })
+    ),
+    ...Array.from({ length: highRiskCount }, () =>
+      generateSyntheticTransaction({ profile: "high-risk" })
+    ),
+  ]);
 
   return {
     totalGenerated: results.length,

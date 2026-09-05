@@ -10,11 +10,12 @@ import {
   ArrowUpRight,
 } from "lucide-react";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 10;
 
 export default async function AlertsPage() {
   // Fetch all alerts, newest first
   const alerts = await db.alert.findMany({
+    take: 100,
     orderBy: { createdAt: "desc" },
     include: {
       transaction: {

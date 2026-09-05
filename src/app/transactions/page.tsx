@@ -4,7 +4,7 @@ import { formatCurrency, formatDate } from "@/lib/utils";
 import { DashboardActions } from "@/components/DashboardActions";
 import { ArrowUpRight, Search, SlidersHorizontal, ShieldAlert, Receipt } from "lucide-react";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 10;
 
 export default async function TransactionsPage() {
   const transactions = await db.transaction.findMany({
@@ -13,7 +13,7 @@ export default async function TransactionsPage() {
     include: {
       customer: true,
       merchant: true,
-      riskFactors: true,
+      _count: { select: { riskFactors: true } },
     },
   });
 
@@ -148,7 +148,7 @@ export default async function TransactionsPage() {
 
                     {/* Risk Factors Count */}
                     <td className="py-3 px-3 font-semibold text-slate-700">
-                      {tx.riskFactors.length} factors
+                      {tx._count.riskFactors} factors
                     </td>
 
                     {/* Timestamp */}
