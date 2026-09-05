@@ -2,10 +2,6 @@ import { NextResponse } from "next/server";
 import Groq from "groq-sdk";
 import { db } from "@/lib/db";
 
-const groq = new Groq({
-  apiKey: process.env.GROQ_API_KEY || "",
-});
-
 export async function POST(req: Request) {
   try {
     const { messages } = await req.json();
@@ -14,7 +10,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid messages format" }, { status: 400 });
     }
 
-    // MVP Context Gathering: Fetch the last 50 transactions to give the model context
+    // Fetch recent transactions for context
     const recentTxns = await db.transaction.findMany({
       take: 50,
       orderBy: { createdAt: "desc" },
@@ -25,54 +21,52 @@ export async function POST(req: Request) {
     });
 
     const systemPrompt = `You are an intelligent fintech risk assistant for RiskPilot.
-Answer the user's questions based ONLY on the data provided below. If the user asks about something not in the context, politely inform them that you do not have data on that. Be concise, helpful, and format any IDs or monetary values clearly.
+Answer the user's questions based ONLY on the data provided below. Be concise and helpful.
 
-Current Database Context (Last 50 Transactions):
+Current Database Context (Last ${recentTxns.length} Transactions):
 ${recentTxns
   .map(
     (tx) =>
-      `[${tx.id}] ${tx.createdAt.toISOString()} - ₹${tx.amount} at ${tx.merchant.name} (${tx.merchant.category}) by ${tx.customer.name}. Status: ${tx.status}, RiskLevel: ${tx.riskLevel} (Score: ${tx.riskScore})`
+      `[${tx.id.substring(0, 8)}] ₹${tx.amount} at ${tx.merchant.name} (${tx.merchant.category}) by ${tx.customer.name}. Status: ${tx.status}, Risk: ${tx.riskLevel} (Score: ${tx.riskScore})`
   )
   .join("\n")}`;
 
-    const isRealApiKeyPresent =
-      process.env.GROQ_API_KEY &&
-      process.env.GROQ_API_KEY.startsWith("gsk_") &&
-      process.env.GROQ_API_KEY.length > 20;
+    const apiKey = process.env.GROQ_API_KEY;
+    const isValidKey = apiKey && apiKey.startsWith("gsk_") && apiKey.length > 20;
 
-    if (!isRealApiKeyPresent) {
-      const encoder = new TextEncoder();
-      const readable = new ReadableStream({
-        async start(controller) {
-          const fallbackText =
-            "Hello! I am operating in fallback mode as no valid Groq API key is configured. I see you have " +
-            recentTxns.length +
-            " recent transactions in the database. Please provide a GROQ_API_KEY for full AI capabilities.";
-          controller.enqueue(encoder.encode(fallbackText));
-          controller.close();
-        },
-      });
-      return new Response(readable, {
-        headers: { "Content-Type": "text/plain; charset=utf-8" },
-      });
+    if (!isValidKey) {
+      return new Response(
+        `I'm in fallback mode — no valid GROQ_API_KEY found. I can see ${recentTxns.length} transactions in the database.`,
+        { headers: { "Content-Type": "text/plain; charset=utf-8" } }
+      );
     }
 
-    // Map messages to Groq format
+    const groq = new Groq({ apiKey });
+
     const groqMessages = messages.map((m: any) => ({
       role: (m.role === "assistant" ? "assistant" : "user") as "assistant" | "user",
       content: m.content,
     }));
 
-    // Stream from Groq
-    const stream = await groq.chat.completions.create({
-      model: "llama-3.3-70b-versatile",
-      max_tokens: 1024,
-      stream: true,
-      messages: [
-        { role: "system", content: systemPrompt },
-        ...groqMessages,
-      ],
-    });
+    let stream;
+    try {
+      stream = await groq.chat.completions.create({
+        model: "llama-3.3-70b-versatile",
+        max_tokens: 1024,
+        stream: true,
+        messages: [
+          { role: "system", content: systemPrompt },
+          ...groqMessages,
+        ],
+      });
+    } catch (groqErr: any) {
+      console.error("Groq API error:", groqErr);
+      // Return a readable error instead of crashing with 500
+      return new Response(
+        `AI error: ${groqErr?.message || "Groq API failed"}. Please try again.`,
+        { headers: { "Content-Type": "text/plain; charset=utf-8" } }
+      );
+    }
 
     const readable = new ReadableStream({
       async start(controller) {
@@ -84,9 +78,9 @@ ${recentTxns
               controller.enqueue(encoder.encode(text));
             }
           }
-        } catch (error) {
-          console.error("Stream error:", error);
-          controller.enqueue(encoder.encode("\n[Error: Stream interrupted]"));
+        } catch (streamErr) {
+          console.error("Stream error:", streamErr);
+          controller.enqueue(encoder.encode("\n[Stream interrupted. Please try again.]"));
         } finally {
           controller.close();
         }
@@ -102,9 +96,10 @@ ${recentTxns
     });
   } catch (error: any) {
     console.error("Chat API error:", error);
-    return NextResponse.json(
-      { error: "Internal Server Error", details: error.message },
-      { status: 500 }
+    // Return 200 with error text so the frontend shows it instead of crashing
+    return new Response(
+      `Server error: ${error.message}. Please try again.`,
+      { headers: { "Content-Type": "text/plain; charset=utf-8" } }
     );
   }
 }
