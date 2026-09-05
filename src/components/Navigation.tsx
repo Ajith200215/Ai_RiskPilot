@@ -125,12 +125,14 @@ export function Topbar() {
         {/* Quick action buttons */}
         <div className="flex items-center gap-2">
           <button
+            onClick={() => alert("Global search is currently under development. Stay tuned!")}
             title="Search"
             className="w-9 h-9 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors"
           >
             <Search className="w-4 h-4" />
           </button>
           <button
+            onClick={() => alert("Global filters are coming soon!")}
             title="Filter"
             className="w-9 h-9 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors"
           >
