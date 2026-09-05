@@ -27,13 +27,13 @@ import { GlobalSearchModal } from "./GlobalSearchModal";
 import { GlobalFilterModal } from "./GlobalFilterModal";
 
 const NAV_ITEMS = [
-  { name: "Dashboard", href: "/dashboard", icon: LayoutGrid },
-  { name: "Transactions", href: "/transactions", icon: Receipt },
-  { name: "Simulation Center", href: "/simulation", icon: FlaskConical },
-  { name: "AI Assistant", href: "/assistant", icon: Bot },
-  { name: "Risk Engine Tests", href: "/risk-engine-tests", icon: TestTube2 },
-  { name: "Merchants", href: "/merchants", icon: Building2 },
-  { name: "Alerts", href: "/alerts", icon: Bell },
+  // { name: "Dashboard", href: "/dashboard", icon: LayoutGrid },
+  // { name: "Transactions", href: "/transactions", icon: Receipt },
+  // { name: "Simulation Center", href: "/simulation", icon: FlaskConical },
+  // { name: "AI Assistant", href: "/assistant", icon: Bot }, // Temporarily disabled, save for later
+  // { name: "Risk Engine Tests", href: "/risk-engine-tests", icon: TestTube2 },
+  // { name: "Merchants", href: "/merchants", icon: Building2 },
+  // { name: "Alerts", href: "/alerts", icon: Bell },
 ];
 
 export function Sidebar() {
